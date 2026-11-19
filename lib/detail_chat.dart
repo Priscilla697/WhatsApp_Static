@@ -1,15 +1,48 @@
 import 'package:flutter/material.dart';
 
+class Message {
+  final String chat;
+  final bool isMe;
+
+  Message({required this.chat, required this.isMe});
+}
+
 class DetailChat extends StatefulWidget {
-  const DetailChat({
-    super.key,
-  }); // Diubah dari 'new' menjadi nama class 'DetailChat'
+  const DetailChat({super.key});
 
   @override
   State<DetailChat> createState() => _DetailChatState();
 }
 
 class _DetailChatState extends State<DetailChat> {
+  //Tambahkan Controller
+  TextEditingController textPesan = TextEditingController();
+
+  final List<Message> _pesan = [
+    Message(chat: "tes", isMe: true),
+    Message(chat: "apa?", isMe: false),
+  ];
+
+  //membuat tombol kirim
+  void kirimPesan() {
+    if (textPesan.text.trim().isEmpty) return;
+
+    setState(() {
+      //untuk perubahan
+      _pesan.add(Message(chat: textPesan.text, isMe: true));
+    });
+
+    textPesan.clear();
+
+    Future.delayed(const Duration(seconds: 2), () {
+      if (mounted) {
+        setState(() {
+          _pesan.add(Message(chat: "Apaan dah?", isMe: false));
+        });
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -54,11 +87,14 @@ class _DetailChatState extends State<DetailChat> {
       body: Column(
         children: [
           Expanded(
-            child: ListView(
-              padding: const EdgeInsets.all(10),
-              children: [
-                Align(
-                  alignment: Alignment.centerRight,
+            child: ListView.builder(
+              itemCount: _pesan.length,
+              itemBuilder: (context, index) {
+                final psn = _pesan[index];
+                return Align(
+                  alignment: psn.isMe
+                      ? Alignment.centerRight
+                      : Alignment.centerLeft,
                   child: Container(
                     margin: const EdgeInsets.symmetric(vertical: 5),
                     padding: const EdgeInsets.all(10),
@@ -66,10 +102,10 @@ class _DetailChatState extends State<DetailChat> {
                       color: const Color.fromARGB(255, 64, 155, 71),
                       borderRadius: BorderRadius.circular(10),
                     ),
-                    child: const Text("Hi"),
+                    child: Text(psn.chat),
                   ),
-                ),
-              ],
+                );
+              },
             ),
           ),
           Padding(
@@ -78,13 +114,19 @@ class _DetailChatState extends State<DetailChat> {
               children: [
                 Expanded(
                   child: TextField(
+                    controller: textPesan,
                     decoration: InputDecoration(
                       hintText: 'Tulis Pesan...',
                       border: OutlineInputBorder(),
                     ),
                   ),
                 ),
-                IconButton(onPressed: () {}, icon: Icon(Icons.send)),
+                IconButton(
+                  onPressed: () {
+                    kirimPesan();
+                  },
+                  icon: Icon(Icons.send),
+                ),
               ],
             ),
           ),
